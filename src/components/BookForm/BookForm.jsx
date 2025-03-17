@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import "./BookForm.css";
-import { useDispatch } from "react-redux";
-import { addBook } from "../../store/slices/bookSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { addBook, fetchBook } from "../../store/slices/bookSlice";
 import { toast } from "react-toastify";
 import books from "../../data/books.json";
+import { BASE_URL } from "../../utils/constants";
 
 const BookForm = () => {
+  const state = useSelector((state) => state.book.isSpinning);
   const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -40,6 +42,31 @@ const BookForm = () => {
     setAuthor("");
   };
 
+  const addBookWhithMokkyDev = async () => {
+    const newBook = {
+      title,
+      author,
+      source: "server",
+      isFavorite: false,
+    };
+    try {
+      const response = await fetch(BASE_URL, {
+        method: "POST",
+        body: JSON.stringify(newBook),
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
+      if (response.ok) {
+        dispatch(fetchBook());
+      }
+      setTitle("");
+      setAuthor("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="app-block book-form">
       <h2>Add a New Book</h2>
@@ -67,14 +94,14 @@ const BookForm = () => {
           Add Random
         </button>
 
-        <button type="button">
+        <button type="button" onClick={addBookWhithMokkyDev}>
           {false ? (
             <>
               <span>Loading Book...</span>
               <FaSpinner className="spinner" />
             </>
           ) : (
-            "Add Random via API"
+            "Add by MOKKY.dev"
           )}
         </button>
       </form>

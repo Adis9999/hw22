@@ -1,7 +1,14 @@
 import { BsBookmarkStarFill, BsBookmarkStar } from "react-icons/bs";
 import "./BookList.css";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteBook, pickFavoriteBook } from "../../store/slices/bookSlice";
+import {
+  deleteBook,
+  deleteBookThunk,
+  fetchBook,
+  pickFavoriteBook,
+  toggleBook,
+} from "../../store/slices/bookSlice";
+import { useEffect } from "react";
 
 const BookList = () => {
   const { book } = useSelector((state) => state.book);
@@ -10,27 +17,35 @@ const BookList = () => {
   );
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(fetchBook());
+  }, [dispatch]);
+
   const handleDeleteBook = (id) => {
     dispatch(deleteBook(id));
+    dispatch(deleteBookThunk(id));
   };
 
   const handleToggleFavorite = (id) => {
     dispatch(pickFavoriteBook(id));
+    dispatch(toggleBook(id));
   };
 
-  const filteredBooks = book.filter((book) => {
-    const matchesTitle = book.title
-      .toLowerCase()
-      .includes(filterByTitle.toLowerCase());
-    const matchesAuthor = book.author
-      .toLowerCase()
-      .includes(filterByAuthor.toLowerCase());
-    const matchesFavorite = favoriteBooks ? book.isFavorite : true;
-    return matchesTitle && matchesAuthor && matchesFavorite;
-  });
+  const filteredBooks = Array.isArray(book)
+    ? book.filter((book) => {
+        const matchesTitle = book.title
+          ? book.title.toLowerCase().includes(filterByTitle.toLowerCase())
+          : false;
+        const matchesAuthor = book.author
+          ? book.author.toLowerCase().includes(filterByAuthor.toLowerCase())
+          : false;
+        const matchesFavorite = favoriteBooks ? book.isFavorite : true;
+        return matchesTitle && matchesAuthor && matchesFavorite;
+      })
+    : [];
 
   const highlightMatch = (text, filter) => {
-    if (!filter) return text;
+    if (!filter || !text) return text;
 
     const regex = new RegExp(`(${filter})`, "gi");
 
